@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Container,
@@ -19,66 +19,48 @@ import {
     useDisclosure,
     Image,
     Badge,
+    useToast,
+    Spinner,
+    Center
 } from '@chakra-ui/react';
 import { FaLock, FaChalkboardTeacher, FaUsers } from 'react-icons/fa';
-
-interface ClassItem {
-    id: number;
-    name: string;
-    description: string;
-    enrolled: boolean;
-    students: number;
-    banner: string;
-    code: string;
-}
+import { getClasses, verifyClassCode, Class } from '@/services/api';
 
 interface ClassCardProps {
-    classItem: ClassItem;
+    classItem: Class;
+    onJoinSuccess: () => void;
 }
 
-// Sample class data
-const classesData: ClassItem[] = [
-    {
-        id: 1,
-        name: "Pemrograman Dasar",
-        description: "Pembelajaran dasar logika pemrograman menggunakan blockly",
-        enrolled: false,
-        students: 156,
-        banner: "/api/placeholder/800/200",
-        code: "PROG101"
-    },
-    {
-        id: 2,
-        name: "Algoritma dan Struktur Data",
-        description: "Pembelajaran konsep algoritma dan struktur data dengan visual yang sangat panjang sekali untuk testing apakah button akan sejajar",
-        enrolled: true,
-        students: 89,
-        banner: "/api/placeholder/800/200",
-        code: "ALGO202"
-    },
-    {
-        id: 3,
-        name: "Pengantar Pemrograman Web",
-        description: "Belajar dasar-dasar pemrograman web secara interaktif",
-        enrolled: false,
-        students: 234,
-        banner: "/api/placeholder/800/200",
-        code: "WEB303"
-    }
-];
-
-const ClassCard: React.FC<ClassCardProps> = ({ classItem }) => {
+const ClassCard: React.FC<ClassCardProps> = ({ classItem, onJoinSuccess }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [classCode, setClassCode] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
     const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-    const handleJoinClass = () => {
-        if (classCode === classItem.code) {
-            alert("Berhasil bergabung dengan kelas!");
+    const handleJoinClass = async () => {
+        setIsLoading(true);
+        try {
+            await verifyClassCode(classItem.slug, classCode);
+            toast({
+                title: "Berhasil bergabung dengan kelas!",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
             onClose();
-        } else {
-            alert("Kode kelas tidak valid!");
+            onJoinSuccess();
+        } catch (error: any) {
+            toast({
+                title: "Gagal bergabung",
+                description: error.message || "Kode kelas tidak valid!",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -100,52 +82,53 @@ const ClassCard: React.FC<ClassCardProps> = ({ classItem }) => {
         >
             <Image
                 src={classItem.banner}
-                alt={classItem.name}
+                alt={classItem.title}
                 height="200px"
                 width="100%"
                 objectFit="cover"
+                fallbackSrc="/api/placeholder/800/200"
             />
 
             <VStack p={6} flex="1" spacing={4} align="stretch">
                 <VStack flex="1" align="stretch" spacing={4}>
                     <Box>
                         <HStack justify="space-between" align="start">
-                            <Heading size="md" mb={2}>{classItem.name}</Heading>
+                            <Heading size="md" mb={2}>{classItem.title}</Heading>
                             <Badge
-                                colorScheme={classItem.enrolled ? 'green' : 'blue'}
+                                colorScheme={classItem.is_enrolled ? 'green' : 'blue'}
                                 variant="subtle"
                                 px={2}
                                 py={1}
                                 borderRadius="full"
                             >
-                                {classItem.enrolled ? 'Terdaftar' : 'Buka'}
+                                {classItem.is_enrolled ? 'Terdaftar' : 'Buka'}
                             </Badge>
                         </HStack>
                         <Text color={useColorModeValue('gray.600', 'gray.300')}>
-                            {classItem.description}
+                            {classItem.detail}
                         </Text>
                     </Box>
 
                     <HStack spacing={4} color={useColorModeValue('gray.600', 'gray.400')}>
                         <HStack>
                             <FaUsers />
-                            <Text fontSize="sm">{classItem.students} Siswa</Text>
+                            <Text fontSize="sm">{classItem.total_students} Siswa</Text>
                         </HStack>
                         <HStack>
                             <FaChalkboardTeacher />
-                            <Text fontSize="sm">4 Materi</Text>
+                            <Text fontSize="sm">{classItem.total_chapters} Materi</Text>
                         </HStack>
                     </HStack>
                 </VStack>
 
                 <Button
-                    colorScheme={classItem.enrolled ? 'brand' : 'blue'}
-                    variant={classItem.enrolled ? 'solid' : 'outline'}
+                    colorScheme={classItem.is_enrolled ? 'brand' : 'blue'}
+                    variant={classItem.is_enrolled ? 'solid' : 'outline'}
                     width="full"
-                    onClick={classItem.enrolled ? () => { } : onOpen}
-                    leftIcon={classItem.enrolled ? <FaChalkboardTeacher /> : <FaLock />}
+                    onClick={classItem.is_enrolled ? () => { } : onOpen}
+                    leftIcon={classItem.is_enrolled ? <FaChalkboardTeacher /> : <FaLock />}
                 >
-                    {classItem.enrolled ? 'Akses Kelas' : 'Masukkan Kode'}
+                    {classItem.is_enrolled ? 'Akses Kelas' : 'Masukkan Kode'}
                 </Button>
             </VStack>
 
@@ -161,7 +144,12 @@ const ClassCard: React.FC<ClassCardProps> = ({ classItem }) => {
                                 value={classCode}
                                 onChange={(e) => setClassCode(e.target.value)}
                             />
-                            <Button colorScheme="blue" width="full" onClick={handleJoinClass}>
+                            <Button
+                                colorScheme="blue"
+                                width="full"
+                                onClick={handleJoinClass}
+                                isLoading={isLoading}
+                            >
                                 Gabung Kelas
                             </Button>
                         </VStack>
@@ -173,11 +161,38 @@ const ClassCard: React.FC<ClassCardProps> = ({ classItem }) => {
 };
 
 const ClassPage: React.FC = () => {
+    const [classes, setClasses] = useState<Class[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const toast = useToast();
+
+    const fetchClasses = async () => {
+        try {
+            setIsLoading(true);
+            const response = await getClasses();
+            setClasses(response.data.classes);
+        } catch (error: any) {
+            setError(error.message || 'Failed to fetch classes');
+            toast({
+                title: "Error",
+                description: error.message || 'Failed to fetch classes',
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchClasses();
+    }, []);
+
     return (
         <Box bg={useColorModeValue('gray.50', 'gray.900')} minH="calc(100vh - 60px)">
             <Container maxW="container.xl" py={8}>
                 <VStack spacing={8} align="stretch">
-                    {/* Header Section */}
                     <Box textAlign="center" pt={4} pb={8}>
                         <Heading
                             size="2xl"
@@ -196,12 +211,25 @@ const ClassPage: React.FC = () => {
                         </Text>
                     </Box>
 
-                    {/* Classes Grid */}
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                        {classesData.map((classItem) => (
-                            <ClassCard key={classItem.id} classItem={classItem} />
-                        ))}
-                    </SimpleGrid>
+                    {isLoading ? (
+                        <Center py={10}>
+                            <Spinner size="xl" />
+                        </Center>
+                    ) : error ? (
+                        <Center py={10}>
+                            <Text color="red.500">{error}</Text>
+                        </Center>
+                    ) : (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                            {classes.map((classItem) => (
+                                <ClassCard
+                                    key={classItem.id}
+                                    classItem={classItem}
+                                    onJoinSuccess={fetchClasses}
+                                />
+                            ))}
+                        </SimpleGrid>
+                    )}
                 </VStack>
             </Container>
         </Box>

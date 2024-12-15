@@ -12,7 +12,7 @@ export const config = {
   },
 };
 
-const API_URL = process.env.API_URL || 'https://api-eblock.my.id/api';
+const API_URL = process.env.API_URL || 'http://127.0.0.1:8000/api';
 
 interface FormidableFile extends File {
   filepath: string;
