@@ -50,18 +50,18 @@ const Home: NextPage = () => {
                                 <Text
                                     as={'span'}
                                     position={'relative'}>
-                                    BELAJAR PEMROGRAMAN
+                                    JELAJAHI <br /> DUNIA KODING
                                 </Text>
                                 <br />
                                 <Text as={'span'} color={useColorModeValue('brand.500', 'brand.300')}>
-                                    DENGAN CARA YANG MENYENANGKAN
+                                    MELALUI PUZZLE INTERAKTIF
                                 </Text>
                             </Heading>
                             <Text
                                 color={useColorModeValue('gray.600', 'gray.400')}
                                 fontSize={'xl'}
                             >
-                                e-block adalah platform pembelajaran pemrograman berbasis blok.
+                                BlockClass adalah platform pembelajaran pemrograman berbasis blok.
                                 Tingkatkan keterampilan coding Anda melalui tantangan yang menarik
                                 dan interaktif. Mulai perjalanan coding Anda sekarang!
                             </Text>
