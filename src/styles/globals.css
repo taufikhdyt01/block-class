@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --blockly-bg: #f9f9f9;
+  --blockly-toolbox-bg: #ffffff;
+  --blockly-text: #000000;
+  --blockly-border: #ddd;
+}
+
+html {
+  height: 100%; /* Ensure html takes at least full viewport height */
+  min-height: 100%; /* Fallback for older browsers */
+}
+
+body {
+  min-height: 100%; /* Ensure body takes at least full viewport height */
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  color: var(--foreground);
+  background-color: var(--background);
+}
+
+/* Ensure the root div of your Next.js app takes full height */
+#__next {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Rest of your Blockly styles remain the same */
+.blocklySvg {
+  background-color: var(--blockly-bg) !important;
+}
+
+.blocklyToolboxDiv {
+  background-color: var(--blockly-toolbox-bg) !important;
+  border-right: 1px solid var(--blockly-border);
+}
+
+.blocklyTreeLabel {
+  font-size: 14px !important;
+  color: var(--blockly-text) !important;
+}
+
+.blocklyText {
+  font-size: 12px !important;
+  fill: var(--blockly-text) !important;
+}
+
+.blocklyHtmlInput {
+  background-color: var(--blockly-bg);
+  color: var(--blockly-text);
+}
+
+.blocklySelected > .blocklyPath {
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
+.blocklyHighlightedConnectionPath {
+  stroke: #fff;
+}
+
+.injectionDiv {
+  overflow: hidden;
+  position: relative;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.blocklyMainBackground {
+  stroke-width: 0;
+}
+
+.blocklyScrollbarVertical {
+  display: none !important;
+}
+
+.blocklyScrollbarHorizontal {
+  display: none !important;
+}
+
+.injectionDiv {
+  overflow: hidden !important;
+}
