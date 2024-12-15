@@ -600,3 +600,39 @@ export async function updateProfile(data: FormData): Promise<ApiResponse<AuthUse
     body: data
   });
 }
+
+export interface Class {
+    id: number;
+    slug: string;
+    title: string;
+    banner: string;
+    detail: string;
+    access_code: string;
+    status: string;
+    total_students: number;
+    total_teachers: number;
+    total_chapters: number;
+    is_enrolled: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ClassesData {
+    classes: Class[];
+    pagination: Pagination;
+}
+
+export interface ClassesResponse extends ApiResponse<ClassesData> {}
+
+export const getClasses = async (page: number = 1): Promise<ClassesResponse> => {
+    return httpClient<ClassesData>(`classes?page=${page}`);
+};
+
+export const verifyClassCode = async (slug: string, code: string): Promise<ApiResponse<null>> => {
+    return httpClient<null>(`classes/${slug}/enroll`, {
+        method: 'POST',
+        body: {
+            access_code: code
+        }
+    });
+};
